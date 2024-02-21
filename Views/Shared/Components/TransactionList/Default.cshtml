@@ -1,0 +1,104 @@
+﻿@using MvcTest.Models;
+@using MvcTest.Models.HotelManagerModels;
+@using HotelAdmin.Data.Models.Order;
+
+@model IEnumerable<MoneyTransaction>
+@{
+    if ((bool)Context.Items["FirstCallTransactions"])
+    {
+        <script>
+            // Function to check if the user has scrolled to a certain distance from the bottom
+            function isScrolledToBottomThreshold(threshold) {
+                const windowHeight = window.innerHeight;
+                const documentHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.body.offsetHeight,
+                    document.documentElement.clientHeight,
+                    document.documentElement.scrollHeight,
+                    document.documentElement.offsetHeight
+                );
+                const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+                return documentHeight - scrollPosition - windowHeight <= threshold;
+            }
+
+            var stop = false;
+            const tableBody = document.querySelector('tbody')
+            var sent = false;
+            var hotelId = @(((Hotel)Context.Items["Hotel"]).Id);
+            var transactionsNumber = @(Model.Count());
+
+            function handleScrollToThreshold() {
+                if (isScrolledToBottomThreshold(1000)) {
+                    if (!sent && !stop) {
+                        const spinner = document.querySelector('#spinner')
+                        sent = true;
+                        // Send the AJAX request
+                        const xhr = new XMLHttpRequest();
+                        let url = "/Transactions/TransactionList?hotelId=" + hotelId + "&transactionsNumber=" + transactionsNumber;
+                        xhr.open('POST', url);
+                        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                        xhr.onload = function () {
+                            if (xhr.status === 200) {
+                                main.removeChild(spinner);
+                                main.innerHTML += xhr.responseText;
+                                if (xhr.responseText.trim() == "") {
+                                    stop = true;
+                                }
+                                else {
+                                    ordersNumber += 10;
+                                    main.appendChild(spinner);
+                                }
+                            }
+                            else {
+                                console.log(xhr.statusText);
+                            }
+                            sent = false;
+                        };
+                        xhr.send();
+                    }
+                }
+            }
+
+            // Attach the scroll event listener
+            window.addEventListener('scroll', handleScrollToThreshold);
+        </script>
+    }
+    foreach (var transaction in Model)
+    {
+        <tr>
+            <td>
+                <a href="/Orders/Edit?orderId=@(transaction.Order.Id)&hotelId=@(transaction.Order.HotelId)" target="_blank">
+                    #@transaction.Order.Id
+                </a>
+            </td>
+            <td>
+                @{
+                    foreach (var reservation in transaction.Order.Reservations)
+                    {
+                        <p>@reservation.BookableObject.Name</p>
+                    }
+                }
+            </td>
+            <td>
+                @{
+                    foreach (var reservation in transaction.Order.Reservations)
+                    {
+                        <p>@reservation.Start.ToString("dd.MM.yy")</p>
+                    }
+                }
+            </td>
+            <td>@transaction.Amount</td>
+            <td>@transaction.TransactionMethod.Name</td>
+            <td>@transaction.Date.ToString("dd.MM.yy hh:mm")</td>
+            <td>@transaction.Comment , @transaction.Order.Comment</td>
+        </tr>
+    }
+    <tr id="spinner">
+        <td colspan="7">
+            <div>
+                <div class="spinner-border"></div>
+            </div>
+        </td>
+    </tr>
+}

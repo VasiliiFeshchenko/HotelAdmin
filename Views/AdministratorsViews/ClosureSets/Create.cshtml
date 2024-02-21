@@ -1,0 +1,48 @@
+﻿@using HotelAdmin.Data.Models.RoomStateSetters;
+@using MvcTest.Models;
+@using HotelAdmin.Data.Models.BookableObjects;
+@model ClosureSet
+@{
+    Context.Items["Title"] = "Закрыть номер - "+(Context.Items["Hotel"] as Hotel)?.Name;
+}
+<script src="/js/CreateClosureSet.js"></script>
+<h4>Закрыть номер</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="BookableObject" class="control-label"></label>
+            <select class="form-control" asp-for="BookableObject">
+                @{
+                    List<BookableObject> rooms = (List<BookableObject>)Context.Items["Rooms"];
+                    for (int i = 0; i < rooms.Count; i++)
+                    {
+                        <option>@rooms[i].Name</option>
+                    }
+                }
+            </select>
+            <span asp-validation-for="BookableObject" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Start" class="control-label">Начальная дата:</label>
+            <input asp-for="Start" type="date" class="form-control" />
+            <span asp-validation-for="Start" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="End" class="control-label">Конечная дата (последняя закрытая клетка в шахматке):</label>
+            <input asp-for="End" type="date" class="form-control" />
+            <span asp-validation-for="End" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Comment" class="control-label">Комментарий</label>
+            <input asp-for="Comment" class="form-control" />
+            <span asp-validation-for="Comment" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <button onclick="SubmitButtonClick()" class="btn btn-primary">Закрыть номер</button>
+        </div>
+        <div class="form-group" id="hotelId">
+            <input asp-for="BookableObject.HotelId" type="hidden" class="form-control" value="@((Context.Items["Hotel"] as Hotel)?.Id)" />
+        </div>
+    </div>
+</div>

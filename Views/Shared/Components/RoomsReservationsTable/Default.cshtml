@@ -1,0 +1,332 @@
+﻿@using HotelAdmin.Data.Models.RoomStateSetters;
+@using MvcTest.Controllers;
+@using MvcTest.Models;
+@using MvcTest.Data;
+@using System.Globalization;
+@using MvcTest.Sevices;
+@using HotelAdmin.Data.Models.Order;
+@{
+    bool isClient = (bool)Context.Items["IsClientTable"];
+ }
+
+<script src="/js/RoomsReservationsTable.js"></script>
+<style>
+
+    th, td {
+        border: 1px solid #ddd;
+        padding-left: 5px;
+        padding-right: 5px;
+        text-align: center;
+        overflow-wrap: break-word;
+        min-width: 120px;
+    }
+    th{
+        width: 120px;
+    }
+    thead {
+        background-color: #f2f2f2;
+    }
+
+    .TableDiv{
+        /*border-radius:10px;*/
+    }
+    .leftColumn{
+        position: sticky; left: 0; background-color: #f2f2f2;width: 180px;
+    }
+    @@media only screen and (max-width: 767px) 
+    {
+        .leftColumn{
+            width: 80px;
+        }
+        th{
+            width: 80px;
+        }
+    }
+    .payedBackgroud{
+        background-color: #8BC34A;
+    }
+
+    .prepayedBackgroud {
+        background-color: #C5E1A5;
+    }
+
+    .unpayedBackgroud {
+        background-color: #FF1744;
+    }
+
+    .closureBackgroud {
+        background-color: #ff7f00;
+    }
+
+    .unbookableBackground {
+        background-color: whilte;
+/*        border: 1px solid #FFFF77;*/
+    }
+
+    .clientPriceBackground{
+        background-color: #8BC34A;
+        border: 1px solid #8BC34A;
+    }
+
+
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 12px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #0d6efd;
+        border-radius: 6px;
+    }
+/*    table a{
+        color:#6D92BE;
+    }*/
+</style>
+@{
+    if (isClient)
+    {
+        <style>
+            th, td {
+                border: 1px solid #c6c6c6;
+                min-width: 0px;
+            }
+
+            th, .leftColumn {
+                border: solid 1px #ddd;
+            }
+
+            .leftColumn {
+                min-width: 120px;
+            }
+            th, .leftColumn{
+                background-color: white;
+            }
+
+            @@media only screen and (max-width: 767px) {
+                .leftColumn {
+                    min-width: 0px;
+                }
+            }
+        </style>
+    }
+}
+    <table style="table-layout: fixed;">
+        <thead>
+            <tr>
+                <th class="leftColumn">Номера</th>
+                @for (int i = 0; i < ((List<DateTime>)Context.Items["Dates"]).Count; i++)
+                {
+                    CultureInfo russianCulture = new CultureInfo("ru-RU");
+
+                    russianCulture.DateTimeFormat.DayNames = russianCulture.DateTimeFormat.AbbreviatedDayNames;
+                    <th>
+                        @((((List<DateTime>)Context.Items["Dates"])[i].ToString("dd.MM.yyyy")) + " " +
+                            ((List<DateTime>)Context.Items["Dates"])[i].ToString("dddd", russianCulture))
+                    </th>
+                }
+                <th>Загрузка...</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @{
+                List<TableRowData> roomsWithDates = (List<TableRowData>)Context.Items["RoomsWithDates"];
+            }
+            @for (int i = 0; i < roomsWithDates.Count; i++)
+            {
+                <tr style="height:35px">
+                @{
+                    if (isClient)
+                    {
+                        <td class="leftColumn" style="width: 100%;">
+                        <a target="_blank" href="@roomsWithDates[i].BookableObject.RoomUrl">@roomsWithDates[i].BookableObject.Name</a>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="leftColumn" style="width: 100%;">@roomsWithDates[i].BookableObject.Name</td>
+                    }
+                }
+                    
+                    @for (int j = 0; j < (roomsWithDates[i]).DateCells.Count; j++)
+                    {
+                        BookableObjectStateSetter setter = roomsWithDates[i].DateCells[j].StateSetter;
+                        if (isClient)
+                        {
+                            if (setter != null)
+                            {
+                                if (setter is Reservation||setter is ClosureSet)
+                                {
+                                    string colorClass = "unbookableBackground";
+                                    <td class="@colorClass"></td>
+                                }
+                                else
+                                {
+                                <td class="clientPriceBackground">@((int)((setter as PriceSet).Price))₽</td>
+                                }
+                            }
+                            else
+                            {
+                            <td class="clientPriceBackground">@((int)(roomsWithDates[i].BookableObject.Category.BasePrice))₽</td>
+                            }
+                        }
+                        else
+                        {
+                            if (setter != null)
+                            {
+                                string colorClass = "";
+                                if (setter is Reservation)
+                                {
+                                    if ((setter as Reservation).Order.PaymentStatus == PaymentStatus.payed)
+                                    {
+                                    colorClass = "payedBackgroud";
+
+                                    }
+                                    if ((setter as Reservation).Order.PaymentStatus == PaymentStatus.notPayed
+                                    || (setter as Reservation).Order.PaymentStatus == PaymentStatus.partiallyPrepayed)
+                                    {
+                                        colorClass = "unpayedBackgroud";
+                                    }
+                                    if ((setter as Reservation).Order.PaymentStatus == PaymentStatus.prepayed)
+                                    {
+                                    colorClass = "prepayedBackgroud";
+                                    }
+                                    <td class="Name @colorClass">
+                                        <a target="_blank" href="/Orders/Edit?hotelId=@((Context.Items["Hotel"] as Hotel).Id)&orderId=@((setter as Reservation).Order.Id)" style="display: block; text-decoration: none; color: inherit; " @*onclick="handlePriceSetClick()"*@>
+                                            @((setter as Reservation).Order.Client.Name)
+                                        </a>
+                                    </td>
+                                }
+                                else if (setter is PriceSet)
+                                {
+                                    <td>
+                                        <a target="_blank" href="/Orders/Create?hotelId=@((Context.Items["Hotel"] as Hotel).Id)&room=@(roomsWithDates[i].BookableObject.Name)&startDate=@(((List<DateTime>)Context.Items["Dates"])[j].ToString("yyyy-MM-dd"))" style="display: block; text-decoration: none; color: inherit; " @*onclick="handlePriceSetClick()"*@>
+                                            @((int)((setter as PriceSet).Price))
+                                        </a>
+                                </td>
+                            }
+                            else if (setter is ClosureSet)
+                            {
+                                    colorClass = "closureBackgroud";
+                                    <td class="@colorClass">
+                                        <a href="#" onclick="DeleteClosureSet(@(setter.Id),@((Context.Items["Hotel"] as Hotel)?.Id))" style="display: block; text-decoration: none; color: inherit;">
+                                            @setter.Comment
+                                        </a>
+                                    </td>
+                                }
+                            }
+                            else
+                            {
+                                <td>
+                                    <a target="_blank" href="/Orders/Create?hotelId=@((Context.Items["Hotel"] as Hotel).Id)&room=@(roomsWithDates[i].BookableObject.Name)&startDate=@(((List<DateTime>)Context.Items["Dates"])[j].ToString("yyyy-MM-dd"))" style="display: block; text-decoration: none; color: inherit; " @*onclick="handlePriceSetClick()"*@>
+                                        @((int)(roomsWithDates[i].BookableObject.Category.BasePrice))
+                                    </a>
+                                </td>
+                            }
+                        }                        
+                    }
+                    @{
+                        if (i == 0)
+                        {
+                            <td id="headRow" style=" align-items: center; justify-content: center; height: 100%;" rowspan="@(((List<TableRowData>)Context.Items["RoomsWithDates"]).Count-1)">
+                                <div id="spinner">
+                                    <div class="spinner-border"></div>
+                                </div>
+                            </td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+<script>
+        const element = document.querySelector('.TableDiv')
+        var sent = false;
+        @{
+            var start = ((DateTime)Context.Items["start"]);
+            var unixTimestampStart = (start - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+            var end = ((DateTime)Context.Items["end"]);
+            var unixTimestampEnd = (end - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+        }
+        var start = new Date(@unixTimestampStart);
+        var end = new Date(@unixTimestampEnd);
+        element.addEventListener('scroll', function () {
+            var scrollLeft = element.scrollLeft;
+            var scrollWidth = element.scrollWidth;
+            var elementWidth = element.clientWidth;
+            var totalScrollableDistance = scrollWidth - elementWidth;
+            var scrollPercentage = (scrollLeft / totalScrollableDistance) * 100;
+
+            let threashHold = 80;
+            if(scrollWidth>4000){
+                threashHold = 90;
+            }
+        if (scrollWidth > 8000){
+            threashHold = 95;
+        }
+                if (scrollWidth > 12000){
+            threashHold = 97.5;
+        }
+                if (scrollWidth > 16000){
+            threashHold = 98.75;
+        }
+                        if (scrollWidth > 20000){
+            threashHold = 99.5;
+        }
+        if (scrollPercentage > threashHold && !sent) {
+                sent = true;
+                end.setMonth(end.getMonth() + 1);
+                GetUpdatedTable();
+            }
+        });
+        function GetUpdatedTable(){
+        const data = {
+            Start: start,
+            End: end
+        };
+
+        // Send the AJAX request
+        const xhr = new XMLHttpRequest();
+        let url = '@(isClient ? "/ClientsRoomsReservationsTable/Table" : "/RoomsReservationsTable/Table")';
+        url = url + "?hotelId=" + @(((Hotel)Context.Items["Hotel"]).Id);
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                element.innerHTML = xhr.responseText;
+                var datesLable = document.getElementById("datesLable")
+                if (datesLable != null) {
+                    datesLable.textContent = convertDateRange(start, end);
+                }
+            }
+            else {
+                console.log(xhr.statusText);
+            }
+            sent = false;
+        };
+        xhr.send(JSON.stringify(data));
+        }
+    function convertDateRange(start_date, end_date) {
+        const startDate = new Date(start_date);
+        const endDate = new Date(end_date);
+
+        const startDay = startDate.getDate().toString().padStart(2, '0');
+        const startMonth = (startDate.getMonth() + 1).toString().padStart(2, '0');
+        const startYear = startDate.getFullYear().toString().slice(-2);
+
+        const endDay = endDate.getDate().toString().padStart(2, '0');
+        const endMonth = (endDate.getMonth() + 1).toString().padStart(2, '0');
+        const endYear = endDate.getFullYear().toString().slice(-2);
+
+        const formattedStartDate = `${startDay}.${startMonth}.${startYear}`;
+        const formattedEndDate = `${endDay}.${endMonth}.${endYear}`;
+
+        const dateRange = `${formattedStartDate} — ${formattedEndDate}`;
+        return dateRange;
+    }
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === 'visible') {
+            GetUpdatedTable();
+        }
+    });
+</script>

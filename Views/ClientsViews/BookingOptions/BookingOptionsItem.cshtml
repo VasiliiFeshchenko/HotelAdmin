@@ -1,0 +1,228 @@
+﻿@using MvcTest.Controllers.ClientsControllers;
+@model OrderOption
+@{
+    Context.Items["Title"] = "Забронировать номера - " + (Context.Items["Hotel"] as Hotel)?.Name;
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation/1.19.3/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+<style>
+    body {
+        background-size: cover;
+        background-position: center;
+        background-image: url('@Url.Content("~/"+(Context.Items["Hotel"] as Hotel).ImageUrl)');
+    }
+
+    hr.custom-hr-30 {
+        width: 30%;
+    }
+
+    hr.custom-hr-10 {
+        width: 10%;
+        margin-left: 5px;
+        margin-top: 5px;
+    }
+
+    .acrylic {
+        padding: 4em 6em;
+        position: relative;
+        background: rgba(255, 255, 255, 0.5);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        margin: 7px;
+    }
+
+    .shadow {
+        border-radius: 1px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /*    @@media only screen and (max-width: 767px) select input {
+            input {
+                width: 200px;
+            }
+        }*/
+</style>
+<div class="child-div acrylic shadow" style="background:rgba(255, 255, 255, 0.8); margin:20px; padding:10px;border-radius:10px;">
+    <h1>Вариант @((int)Context.Items["BookingOptionIndex"] + 1)</h1>
+    <hr class="custom-hr" />
+    <div>
+        @foreach (var item in Model.OrderOptionCategories)
+        {
+            <p>
+                <b>@(item.Name)</b>
+                (@{
+                    var roomCount = item.OrderOptionCategoryRoomsWithDates.Count;
+                    for (int j = 0; j < roomCount; j++)
+                    {
+                        var room = item.OrderOptionCategoryRoomsWithDates[j];
+                        <a href="@room.OrderOptionCategoryRoom.BookableObject.RoomUrl">@room.OrderOptionCategoryRoom.BookableObject.Name</a>
+
+                        @(j != roomCount - 1 ? "/" : "")
+                    }
+                }) ― @(item.CheckIn.ToString("dd.MM.yyyy"))—@(item.CheckOut.ToString("dd.MM.yyyy")) (@(item.NightsNumber)) ― @(item.Price)₽
+            </p>
+            @if (item.OrderOptionCategoryRoomsWithDates.Count != 1)
+            {
+                <p>Пожалуйста, выберете какой именно номер вы хотите забронировать. Администрация оставляет за собой право выбрать другой номер, но по возможности ваши пожелания будут учтены.</p>
+            }
+            <div class="form-group">
+                <select class="form-select room">
+                    @if (item.OrderOptionCategoryRoomsWithDates.Count != 1)
+                    {
+                        <option>Случайный номер</option>
+                    }
+                    @foreach (var room in item.OrderOptionCategoryRoomsWithDates)
+                    {
+                        <option>@room.OrderOptionCategoryRoom.BookableObject.Name</option>
+                    }
+                </select>
+                <span id="sameRoomError" class="text-danger"></span>
+            </div>
+            <hr class="custom-hr-30" />
+        }
+    </div>
+    <div id="myContainer">
+        <h4>Пожалуйста, введите ваши контактные данные</h4>
+        <div class="form-group">
+            <label>Имя и Фамилия</label>
+            <input id="fullNameInput" type="text" class="form-control" required />
+            <span id="fullNameError" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Телефон</label>
+            <input id="phoneInput" type="tel" class="form-control" required />
+            <span id="phoneError" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Электронная почта (e-Mail)</label>
+            <input id="emailInput" type="email" class="form-control" required />
+            <span id="emailError" class="text-danger"></span>
+        </div>
+        <hr class="custom-hr-30" />
+        <label>
+            После нажатия кнопки "Забронировать" номер(а) автоматически будет(-ут) 
+            забронирован(ы) за Вами на <b>3 часа</b>. В течение этого времени Вы должны внести задаток в размере стоимости одного
+            дня проживания, то есть, <b>@(Model.Prepayment) рублей</b>. Подтверждение бронирования и реквизиты для оплаты задатка будут направлены на указанную 
+            Вами электронную почту. Если Вам не пришло подтверждение бронирования, проверьте, пожалуйста, правильность указанной Вами почты.
+            Если у Вас есть необходимость обсудить детали бронирования, свяжитесь, пожалуйста, с нами по телефонам "Отель-коттедж Ф&Ф"
+            +79217441044 или "Дом Трувеллера" +79215740184.
+@*            С уважением, Гостевой дом "Отель-коттедж Ф&Ф"*@
+            
+  @*          После нажатия кнопки "Забронировать", номер(а) автоматически будет
+            забронирован за Вами в течение  <b>3 часов</b>. В течение этого времени Вы должны внести задаток в размере стоимости одного
+            дня проживания, т.е. <b>@(Model.Prepayment) рублей</b>. Подтверждение бронирования и реквизиты для оплаты задатка направлены Вам на указанную
+            Вами электронную почту. Если Вам не пришло подтверждение бронирования, проверьте , пожалуйста, правильность указанной Вами,
+            почты. Если у Вас есть необходимость обсудить детали бронирования , пожалуйста, свяжитесь с нами по телефонам "Отель -коттедж Ф&Ф"
+            +79217441044 или "Дом Трувеллера" +79215740184. С уважением гостиница "Дом Трувеллера Ф&Ф" , гостевой дом "Отель -коттедж Ф&Ф"*@
+        </label>
+        <div class="form-group row">
+            <div class="col-sm-9">
+                <div class="form-check">
+                    <input id="termsCheckbox" type="checkbox" class="form-check-input" />
+                    <label class="form-check-label" for="termsCheckbox">
+                        Я подтверждаю, что ознакомился с правилами выше.
+                    </label>
+                    <span id="termsError" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <hr class="custom-hr-30" />
+        <h4>Итого: @(Model.Price)₽</h4>
+        <h6>Предоплата: @(Model.Prepayment)₽</h6>
+        <button id="submitButton" type="button" class="btn btn-light">Забронировать</button>
+        <button onclick="goBack()" class="btn btn-secondary" style="margin-left:5px">Назад</button>
+    </div>
+
+</div>
+<script>
+    function goBack() {
+        window.history.back(); // Go back one step in the browser history
+    }
+    setTimeout(function () {
+        location.reload();
+    }, 600000);
+    $(document).ready(function () {
+        $('#submitButton').click(function () {
+            var fullName = $('#fullNameInput').val();
+            var phone = $('#phoneInput').val();
+            var email = $('#emailInput').val();
+            var termsChecked = $('#termsCheckbox').is(':checked');
+
+            var isValid = true;
+
+            if (fullName.trim() === '') {
+                $('#fullNameError').text('Имя и фамилия обязательны');
+                isValid = false;
+            } else {
+                $('#fullNameError').text('');
+            }
+
+            if (phone.trim() === '') {
+                $('#phoneError').text('Телефон обязателен');
+                isValid = false;
+            } else {
+                $('#phoneError').text('');
+            }
+
+            if (email.trim() === '') {
+                $('#emailError').text('Адрес электронной почты обязателен');
+                isValid = false;
+            } else {
+                $('#emailError').text('');
+            }
+
+            if (!termsChecked) {
+                $('#termsError').text('Вы должны принять условия бронирования');
+                isValid = false;
+            } else {
+                $('#termsError').text('');
+            }
+            var selectedOptions = [];
+            $('.room').each(function () {
+                var selectedRoom = $(this).val(); // Get the selected option value
+                if (selectedOptions.includes(selectedRoom) && selectedRoom != "Случайный номер") {
+                    $('#sameRoomError').text('Вы выбрали один и тот же номер дважды');
+                    isValid = false;
+                }
+                else {
+                    $('#sameRoomError').text('');
+                }
+                selectedOptions.push(selectedRoom); // Add it to the selectedOptions array
+            });
+            // Perform further actions if isValid is true
+            if (isValid) {
+                var data = {
+                    fullName: fullName,
+                    phone: phone,
+                    email: email,
+                    selectedOptions: selectedOptions
+                };
+
+                // Send the AJAX request
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/BookingOptions/MakeOrder');
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        if (xhr.responseText.includes('Error: price changed')) {
+
+                            alert('Внимание, цена изменилась! Пожалуйста, заполните поля еще раз.');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 0);
+                        }
+                        else {
+                            window.location.replace(xhr.responseText);
+                        }
+
+                    }
+                    else {
+                        console.log(xhr.statusText);
+                    }
+                };
+                xhr.send(JSON.stringify(data));
+            }
+        });
+    });
+</script>

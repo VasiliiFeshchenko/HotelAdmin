@@ -1,0 +1,88 @@
+﻿@{
+    Context.Items["Title"] = "Таблица занятости номеров - " + (Context.Items["Hotel"] as Hotel)?.Name;
+}
+<style>
+    h1,p{
+        margin-left:10px;
+    }
+    body {
+        background-size: cover;
+        background-position: center;
+        background-image: url('@Url.Content("~/"+(Context.Items["Hotel"] as Hotel).ImageUrl)');
+    }
+
+    .acrylic {
+        padding: 4em 6em;
+        position: relative;
+        background: rgba(255, 255, 255, 0.5);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        margin: 20px;
+    }
+
+    .shadow {
+        border-radius: 1px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+    }
+    .TableDiv{
+        border-radius:15px;
+        margin:auto 10px;
+        border:solid 1px #ddd;
+    }
+
+    @@media only screen and (max-width: 767px) {
+        .leftColumn {
+            min-width: 0px;
+        }
+
+        th {
+            width: 80px;        
+        }
+        .TableDiv{
+            margin:0px;
+            border-radius: 7px;
+        }
+
+        .acrylic{
+            margin:10px;
+        }
+
+        p, h1{
+            margin: 0px;
+        }
+    }
+</style>
+<div class="child-div acrylic shadow" style="height:100%; background:rgba(255, 255, 255, 0.8); padding:10px;border-radius:10px;">
+    <h1>Табица занятости номеров (@((Context.Items["Hotel"] as Hotel)?.Name))</h1>
+    <p>
+        На данной странице вы можете ознакомиться с занятостью номеров в отеле и ценами.
+        Для брони, пожалуйста, свяжитесь с нами по телефонам "Отель-коттедж Ф&Ф"
+        +79217441044/"Дом Трувеллера" +79215740184 или воспользуйтесь
+        <a target="_blank" href="/BookingOptions/BookingOptionsParameters?hotelId=@((Context.Items["Hotel"] as Hotel).Id)">
+            Поиском вариантов проживания</a>.
+    </p>
+    <div style="overflow-x: auto;" class="TableDiv">
+        @{
+            Context.Items["IsClientTable"] = true;
+        }
+        @await Component.InvokeAsync("RoomsReservationsTable")
+    </div>
+</div>
+<script>
+    function adjustHeight() {
+    var scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight
+    );
+
+    var body = document.getElementsByTagName("body")[0];
+        var acrylic = document.getElementsByClassName(".acrylic");
+        body.style.height = scrollHeight + 'px';
+    } 
+</script>
+
+

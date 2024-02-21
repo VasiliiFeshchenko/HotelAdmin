@@ -1,0 +1,200 @@
+﻿@using HotelAdmin.Data.Models.Order;
+@using MvcTest.Models;
+@using HotelAdmin.Data.Models.Order;
+@{
+    if ((bool)Context.Items["FirstCall"])
+    {
+        <script src="~/js/OrderList.js"></script>
+        <style>
+            .btn-light {
+                border: solid black 1px;
+            }
+
+                .btn-light:hover {
+                    border: solid black 1px;
+                    background-color: #e2e6ea;
+                }
+        </style>
+    }
+}
+@model IEnumerable<Order>
+
+@{
+    bool isCanceled = (bool)Context.Items["IsCanceledOrders"];
+    if ((bool)Context.Items["FirstCall"])
+    {
+        <script>
+            // Function to check if the user has scrolled to a certain distance from the bottom
+            function isScrolledToBottomThreshold(threshold) {
+                const windowHeight = window.innerHeight;
+                const documentHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.body.offsetHeight,
+                    document.documentElement.clientHeight,
+                    document.documentElement.scrollHeight,
+                    document.documentElement.offsetHeight
+                );
+                const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+                return documentHeight - scrollPosition - windowHeight <= threshold;
+            }
+
+            var stop = false;
+            const main = document.querySelector('main')
+            var sent = false;
+            var hotelId = @(((Hotel)Context.Items["Hotel"]).Id);
+            var isCanceled = @(isCanceled.ToString().ToLower());
+            var ordersNumber = @(Model.Count());
+
+            function handleScrollToThreshold() {
+                if (isScrolledToBottomThreshold(10000)) {
+                    if (!sent && !stop) {
+                        const spinner = document.querySelector('#spinner')
+                        sent = true;
+                        // Send the AJAX request
+                        const xhr = new XMLHttpRequest();
+                        let url = "/Orders/OrderList?hotelId=" + hotelId + "&isCanceled=" + isCanceled + "&ordersNumber=" + ordersNumber;
+                        xhr.open('POST', url);
+                        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                        xhr.onload = function () {
+                            if (xhr.status === 200) {
+                                main.removeChild(spinner);
+                                main.innerHTML += xhr.responseText;
+                                if (xhr.responseText.trim() == ""){
+                                    stop=true;
+                                }
+                                else{
+                                    ordersNumber += 100;
+                                    main.appendChild(spinner);
+                                }
+                            }
+                            else {
+                                console.log(xhr.statusText);
+                            }
+                            sent = false;
+                        };
+                        xhr.send();
+                    }
+                }
+            }
+
+            // Attach the scroll event listener
+            window.addEventListener('scroll', handleScrollToThreshold);
+        </script>
+    }
+
+    foreach (var item in Model)
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <p class="card-text"><strong>Заказ:</strong> #@(item.Id)</p>
+                                    <p class="card-text"><strong>Клиент:</strong> @(item.Client.Name)</p>
+                                    <p class="card-text"><strong>Email:</strong> @(item.Client.EMail)</p>
+                                    <p class="card-text"><strong>Телефон:</strong> @(item.Client.PhoneNumber)</p>
+                                    @{
+                                        if (item.Source != null)
+                                        {
+                                            <p class="card-text"><strong>Источник:</strong> @(item.Source.Name)</p>
+                                        }
+                                        else
+                                        {
+                                            <p class="card-text"><strong>Источник:</strong> не указан</p>
+                                        }
+                                    }
+
+                                </div>
+                                <div class="col-md-2">
+                                    <p class="card-text"><strong>Стоимость:</strong> @(item.Price)₽ </p>
+                                    <p class="card-text"><strong>Продоплата:</strong> @(item.Prepayment)₽</p>
+                                    @*<p class="card-text"><strong>Дэдлайн предоплаты:</strong> @(item.PrepaymentDeadline)</p>*@
+                                    <p class="card-text"><strong>Заплачено:</strong> @(item.PaymentSum)₽</p>
+                                    <p class="card-text"><strong>Создан: </strong> @(item.CreationDate.ToString("dd.MM.yyyy HH:mm"))</p>
+                                    @{
+                                        if (item.LastUpdateDate != null)
+                                        {
+                                            <p class="card-text"><strong>Время последнего редактирования: </strong> @(((DateTime)item.LastUpdateDate).ToString("dd.MM.yyyy HH:mm"))</p>
+                                        }
+                                        if (isCanceled)
+                                        {
+                                            <p class="card-text"><strong>Отменен: </strong> @(((DateTime)item.CancelationDate).ToString("dd.MM.yyyy HH:mm"))</p>
+                                        }
+                                    }
+                                </div>
+                                <div class="col-md-8">
+                                    <table class="table table-striped">
+                                        <thead class="thead-card">
+                                            <tr>
+                                                <th scope="col">Номер</th>
+                                                <th scope="col">Людей</th>
+                                                <th scope="col">Начальная дата</th>
+                                                <th scope="col">Конечная дата (последняя закрытая клетка в шахматке)</th>
+                                                <th scope="col">Дополнительная информация</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                foreach (var reservation in item.Reservations)
+                                                {
+                                                    <tr>
+                                                        <td>@(reservation.BookableObject.Name)</td>
+                                                        <td>@(reservation.NumberofPeople)</td>
+                                                        <td>@(reservation.Start.ToString("dd/MM/yyyy"))</td>
+                                                        <td>@(reservation.End.ToString("dd/MM/yyyy"))</td>
+                                                        <td>@(reservation.Comment)</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="card-text"><strong>Комментарий:</strong>@(item.Comment)</p>
+                                </div>
+                                <div class="col-md-2" style="justify-content:center">
+                                    <button onclick="document.location.href='/Orders/Edit?orderId=@(item.Id)&hotelId=@(item.HotelId)';" type="button" style="width:90%" class="btn btn-primary">Редактировать</button>
+                                </div>
+                                @{
+                                    if (isCanceled)
+                                    {
+                                        <div class="col-md-2" style="justify-content:center">
+                                            <button onclick="RecoverOrder(@(item.Id),@(item.HotelId))" style="width:90%" type="button" class="btn btn-outline-dark">Восстановить</button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-2" style="justify-content:center">
+                                            <button onclick="CancelOrder(@(item.Id),@(item.HotelId))" style="width:90%" type="button" class="btn btn-dark">Отменить</button>
+                                        </div>
+                                    }
+                                }
+                                <div class="col-md-2" style="justify-content:center">
+                                    <button style="width:90%" onclick="DeleteOrder(@(item.Id),@(item.HotelId))" type="button" class="btn btn-danger delete-button">Удалить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    if ((bool)Context.Items["FirstCall"])
+    {
+        <div id="spinner">
+            <div class="spinner-border"></div>
+        </div>
+    }
+}
+
+
+
+
+
+

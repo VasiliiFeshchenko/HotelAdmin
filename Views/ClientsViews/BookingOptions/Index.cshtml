@@ -1,0 +1,166 @@
+﻿@using MvcTest.Controllers.ClientsControllers;
+@using System.Globalization;
+@using System.Web;
+@model List<OrderOption>
+
+@{
+    Context.Items["Title"] = "Варианты проживания - " + (Context.Items["Hotel"] as Hotel)?.Name;
+}
+<style>
+    body {
+        background-size: cover;
+        background-position: center;
+        background-image: url('@Url.Content("~/"+(Context.Items["Hotel"] as Hotel).ImageUrl)');
+    }
+
+    .acrylic {
+        position: relative;
+        background: rgba(255, 255, 255, 0.5);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        margin: 7px;
+    }
+
+    .shadow {
+        ;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .card {
+        background-color: rgb(255,255,255,0.4) !important;
+        margin-bottom: 5px;
+    }
+
+    .card-body {
+        border-radius: 5px;
+    }
+</style>
+
+<script>
+    setTimeout(function () {
+        location.reload();
+    }, 600000);
+</script>
+
+<div class="container">
+    <main role="main" class="pb-3">
+        @{
+            if (Model.Count == 0)
+            {
+                <div class="col-md-12 mb-12">
+                    <div class="card">
+                        <div class="card-body acrylic shadow">
+                            <h3>К сожалению, на запрашиваемые Вами даты <b>нет подходящих вариантов размещения.</b></h3>
+                            <p>
+                                Попробуйте, пожалуйста, изменить даты или параметры размещения и запустить поиск снова.
+                                Обращаем Ваше внимание, что Вы также можете проверить доступность всех номеров в <a target="_blank" href="/ClientsRoomsReservationsTable/Index?hotelId=@((Context.Items["Hotel"] as Hotel).Id)">Таблице занятости номеров</a>.
+                                Если Вы не смогли подобрать подходящий варианта, пожалуйста, свяжитесь с нами:
+                            </p>
+                            @*<p>Обращаем Ваше внимание, что общую таблицу номеров Вы можете посмотреть здесь...</p>*@
+                            <p>Тел.: +79217441044</p>
+                            <p>WhatsApp: +79217441044</p>
+                            <p>E-mail: hotel.fandf@gmail.com</p>
+                            <p>Возможно мы сможем предложить Вам какие-то варианты комбинированного размещения.</p>
+                            <p>Спасибо за внимание к нашему отелю!</p>
+                        </div>
+                    </div>
+                </div>
+
+                return;
+            }
+            if ((bool)Context.Items["ErrorAlert"]==true)
+            {
+                <div class=" acrylic shadow">
+                    <h3>Приносим извинения, но некоторые номера, которые вы хотели забронировать оказались заняты!</h3>
+                    <p>Пожалуйста, выберете другой вариант размещения.</p>
+                </div>
+            }
+        }
+@*        <div class="acrylic shadow">        <h1>Варианты бронирования</h1></div>*@
+
+        <div class="row flex-column">
+            @{
+                <div class="col-md-12 mb-12">
+                    <div class="card">
+                        <div class="card-body acrylic shadow">
+                        <h3>Ниже представлены варианты проживания в соответствии с введенными Вами параметрами.</h3>
+                            <p>Вы также можете проверить доступность всех номеров в 
+                                <a target="_blank" href="/ClientsRoomsReservationsTable/Index?hotelId=@((Context.Items["Hotel"] as Hotel).Id)">
+                                Таблице занятости номеров</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                int i = 1;
+                foreach (var orderOption in Model)
+                {
+                    <div class="col-md-12 mb-12">
+                        <div class="card">
+                            <div class="card-body acrylic shadow">
+                                <h5 class="card-title">Вариант @i</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <ul class="list-unstyled">
+                                            @foreach (var category in orderOption.OrderOptionCategories)
+                                            {
+                                                <li>
+                                                    @{
+                                                        string roomData = "";
+                                                        roomData += category.Name + " (";
+                                                        int j = 0;
+                                                        foreach (var room in category.OrderOptionCategoryRoomsWithDates)
+                                                        {
+                                                            roomData += $"<a href=\"{room.OrderOptionCategoryRoom.BookableObject.RoomUrl}\">{room.OrderOptionCategoryRoom.BookableObject.Name}</a>";
+                                                            if (j != category.OrderOptionCategoryRoomsWithDates.Count - 1)
+                                                            {
+                                                                roomData += "/";
+                                                            }
+                                                            j++;
+                                                        }
+                                                        roomData+=")";
+                                                    }                   
+                                                </li>
+                                                <script>
+                                                    var listItems = document.querySelectorAll('li');
+                                                    var li = listItems[listItems.length - 1];
+                                                    var decodedText = '@Html.Raw(HttpUtility.HtmlDecode(roomData))';
+                                                    li.innerHTML = decodedText;
+                                                </script>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <div class="col">
+                                        <ul class="list-unstyled">
+                                            @foreach (var category in orderOption.OrderOptionCategories)
+                                            {
+                                                <li>@category.CheckIn.ToString("dd.MM.yyyy") -- @category.CheckOut.ToString("dd.MM.yyyy")</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <div class="col">
+                                        <ul class="list-unstyled">
+                                            @foreach (var category in orderOption.OrderOptionCategories)
+                                            {
+                                                <p>@category.Price</p>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="card-text">Итого: @orderOption.Price.ToString("C",new CultureInfo("ru-RU"))</p>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <a href="/BookingOptions/BookingOptionsItem?bookingOptionIndex=@(i-1)&hotelId=@((Context.Items["Hotel"] as Hotel).Id)" class="btn btn-light">Забронировать</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    i++;
+                }
+            }
+        </div>
+
+    </main>
+</div>

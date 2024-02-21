@@ -1,0 +1,205 @@
+﻿@using MvcTest.Models;
+@using MvcTest.Models.HotelManagerModels;
+@using HotelAdmin.Data.Models.Order;
+@model MvcTest.Controllers.OrderModel
+
+<style>
+    .btn-light{
+        border:solid black 1px;
+    }
+
+    .btn-light:hover {
+        border: solid black 1px;
+            background-color: #e2e6ea;
+    }
+</style>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="TelephoneNumber" class="control-label">Номер телефона</label>
+            <input asp-for="TelephoneNumber" class="form-control" value="@(Model!=null ? Model.TelephoneNumber : "")" />
+            <span asp-validation-for="TelephoneNumber" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="EMail" class="control-label"></label>
+            <input asp-for="EMail" class="form-control" value="@(Model!=null ? Model.EMail : "")" />
+            <span asp-validation-for="EMail" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ClientName" class="control-label">Имя клиента (ФИО/имя-фамилия)</label>
+            <input asp-for="ClientName" class="form-control" value="@(Model!=null ? Model.ClientName : "")" />
+            <span asp-validation-for="ClientName" class="text-danger"></span>
+        </div>
+        <hr />
+        <div id="sections">
+            <style>
+                label {
+                    width: 100%;
+                }
+            </style>
+            @{
+                if (Model!=null)
+                {
+                    foreach (var item in Model.Sections)
+                    {
+                        string commentEncoded = System.Web.HttpUtility.UrlPathEncode(item.Comment);
+                        <script>
+                            window.addEventListener('load', function () {
+                                var roomDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(item.Room))");
+                                var startDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(item.StartDate.ToString("yyyy-MM-dd")))");
+                                var endDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(item.EndDate.ToString("yyyy-MM-dd")))");
+                                var commentDecoded = decodeURIComponent("@commentEncoded");
+                                addNewSection(roomDecoded, @item.NumberOfPeople, startDecoded, endDecoded, commentDecoded);
+                            });
+                        </script>
+                    }
+                }
+            }
+        </div>
+        <div class="form-group">
+            <button onclick="addNewSection()" class="btn btn-light">Добавить номер</button>
+        </div>
+        <hr />
+        @*            <div class="form-group">
+        <label class="control-label">Крайний срок внесения предоплаты</label>
+        <input asp-for="PrepaymentDeadline" class="form-control" />
+        <span asp-validation-for="PrepaymentDeadline" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+        <label class="control-label">Заплаченная часть стоимости</label>
+        <input asp-for="PayedPrice" class="form-control" />
+        <span asp-validation-for="PayedPrice" class="text-danger"></span>
+        </div>*@
+        <div class="form-group">
+            <label class="control-label">Источник заказа</label>
+            <select class="form-select" id="option">                
+                @{
+                    List<string> options = await OrderSource.GetAllSources();
+                    if (Model==null)
+                    {
+                        <option>Не указано</option>
+
+                        int i = 0;
+                        foreach (var option in options)
+                        {
+                            if (i != 0)
+                            {
+                                <option>@option</option>
+                            }
+                            i++;
+                        }
+                    }
+
+                    else
+                    {
+                        if (Model.Source != options[0])
+                        {
+                            <option>@Model.Source</option>
+                            int i = 0;
+                            foreach (var option in options)
+                            {
+                                if (i != 0 && option != Model.Source)
+                                {
+                                    <option>@option</option>
+                                }
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            <option>@Model.Source (нельзя изменить)</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Комментарий к заказу</label>
+            <textarea asp-for="Comment" value="@(Model!=null ? Model.Comment : "")" rows="1" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' class="form-control"></textarea>
+            <span asp-validation-for="Comment" class="text-danger"></span>
+        </div>
+        <div class="form-group" id="hotelId">
+            <input asp-for="HotelId" type="hidden" class="form-control" value="@((Context.Items["Hotel"] as Hotel)?.Id)" />
+        </div>
+        @{
+            if (Model!=null)
+            {
+                <div class="form-group" id="orderId">
+                    <input asp-for="Id" type="hidden" class="form-control" value="@(Model.Id)" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group" id="orderId">
+                    <input asp-for="Id" type="hidden" class="form-control" value="-1" />
+                </div>
+            }
+        }
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label">Общая стоимость заказа</label>
+            @{
+                if (Model!=null)
+                {
+                    <input asp-for="Price" class="form-control" value="@(Model.Price)" />
+                }
+                else
+                {
+                    <input asp-for="Price" class="form-control"/>
+                }
+            }
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Сумма предоплаты</label>
+            @{
+                if (Model != null)
+                {
+                    <input asp-for="Prepayment" class="form-control" value="@(Model.Prepayment)" />
+                }
+                else
+                {
+                    <input asp-for="Prepayment" class="form-control" />
+                }
+            }
+            <span asp-validation-for="Prepayment" class="text-danger"></span>
+        </div>
+        @{
+            if (Model != null)
+            {
+                <div class="form-group">
+                    <p>Заплаченная часть стоимости (старое поле): @(Model.PayedPrice)₽</p>
+                </div>
+            }
+        }
+        <hr />
+        <div id="incomeTransactions">
+        </div>
+        <button onclick="addNewTransaction(false)" class="btn btn-light">Добавить оплату</button>
+        <hr />
+        <div id="outcomeTransactions">
+        </div>
+        <button onclick="addNewTransaction(true)" class="btn btn-light">Добавить возарт средств</button>
+
+        @{
+            if (Model != null)
+            {
+                foreach (var item in Model.MoneyTransactions)
+                {
+                    string commentEncoded = System.Web.HttpUtility.UrlPathEncode(item.Comment);
+                    string methodEncoded = System.Web.HttpUtility.UrlPathEncode(item.Method);
+                    string isRefund = item.IsRefund ? "true" : "false";
+                    <script>
+                        window.addEventListener('load', function () {
+                            var dateDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(item.Date.ToString("yyyy-MM-ddTHH:mm")))");
+                            var commentDecoded = decodeURIComponent("@commentEncoded");
+                            var methodDecoded = decodeURIComponent("@methodEncoded");
+                            addNewTransaction(@isRefund, methodDecoded, @item.Amount.ToString().Replace(',','.'), dateDecoded, commentDecoded);
+                        });
+                    </script>
+                }
+            }
+        }
+    </div>
+</div>

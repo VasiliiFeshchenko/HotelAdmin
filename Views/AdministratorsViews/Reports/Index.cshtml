@@ -1,0 +1,36 @@
+﻿<h1>Отчеты</h1>
+<h3>Общий финансовый отчет</h3>
+<label> 
+    Дата отчета
+    <input type="date" id="date">
+</label>
+<input type="hidden" id="hotel" value="@((Context.Items["Hotel"] as Hotel)?.Id)" />
+<button id="downloadButton" type="button" class="btn btn-outline-primary">Generate Report</button>
+<script>
+    // JavaScript code to handle the button click event
+    document.getElementById("downloadButton").addEventListener("click", function () {
+
+        const hotelId = document.getElementById("hotel").value;
+        const date = document.getElementById("date").value;
+
+        // Construct the URL to your action method with the hotelId and date as query parameters
+        const url = `/Reports/GeneralFinantialReport?hotelId=${hotelId}&date=${date}`;
+
+        // Create a hidden anchor element
+        const downloadLink = document.createElement("a");
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+
+        // Set the href of the anchor to your action URL
+        downloadLink.href = url;
+
+        // Set the download attribute to the desired file name
+        downloadLink.download = "example.xlsx";
+
+        // Simulate a click on the anchor element to trigger the file download
+        downloadLink.click();
+
+        // Clean up the dynamically created anchor element
+        document.body.removeChild(downloadLink);
+    });
+</script>

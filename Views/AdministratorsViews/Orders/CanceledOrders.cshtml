@@ -1,0 +1,12 @@
+﻿@using HotelAdmin.Data.Models.Order;
+@using MvcTest.Models;
+@using HotelAdmin.Data.Models.Order;
+@model IEnumerable<Order>
+@{
+    Context.Items["Title"] = "Отмененные заказы - " + (Context.Items["Hotel"] as Hotel)?.Name;
+}
+<h1>Отмененные заказы</h1>
+<a href="/Orders/Index/@((Context.Items["Hotel"] as Hotel)?.Id)" class="btn btn-light">Все заказы</a>
+@{
+    @await Component.InvokeAsync("OrderList", new {model = Model})
+}

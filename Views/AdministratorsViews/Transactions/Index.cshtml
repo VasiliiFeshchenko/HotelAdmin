@@ -1,0 +1,19 @@
+﻿<h1>Оплаты/возвраты</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Заказ</th>
+            <th>Номера</th>
+            <th>Заезд</th>
+            <th>Сумма</th>
+            <th>Метод оплаты</th>
+            <th>Дата</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            @await Component.InvokeAsync("TransactionList", new {model = Model})
+        }
+    </tbody>
+</table>

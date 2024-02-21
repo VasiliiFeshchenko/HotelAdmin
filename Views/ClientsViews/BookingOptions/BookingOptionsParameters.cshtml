@@ -1,0 +1,216 @@
+﻿@using MvcTest.Models;
+@{
+    Layout = null;
+    Context.Items["Title"] = "Найти варианты проживания - " + (Context.Items["Hotel"] as Hotel)?.Name;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Context.Items["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MvcTest.styles.css" asp-append-version="true" />
+    <script src="~/js/CreateSearchQuery.js"></script>
+
+    <style>
+        body {
+            background-size: cover;
+            background-position: center;
+            background-image: url('@Url.Content("~/"+(Context.Items["Hotel"] as Hotel).ParametersImageUrl)');
+            margin: 0;
+            display: flex;
+        }
+
+        input {
+            margin-right: 5px;
+        }
+
+        .acrylic {
+            padding: 4em 6em;
+            position: relative;
+            background: rgba(255, 255, 255, 1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            /*            margin: 7px;*/
+        }
+
+        .btn-light {
+            color: #000;
+            background-color: #dee2e6;
+            border-color: #f8f9fa;
+        }
+
+        ._shadow {
+            border-radius: 1px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .child-div {
+            flex: 1;
+        }
+
+        #section {
+            background-color: #f8f9fa !important;
+            margin-bottom: 5px;
+        }
+
+        @@media (max-width: 767px) { /* Adjust the maximum width to match your desired breakpoint */
+            .hide-on-phone {
+                display: none;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="child-div acrylic _shadow" style=" /*margin:20px;*/ padding:10px;/*border-radius:10px;*/">
+        <h1>Найти варианты проживания</h1>
+        <hr />
+        <h4>Пожалуйста, заполните информацию о вашем плане проживания для поиска вариантов размещения</h4>
+        <p>Вы также можете проверить доступность всех номеров в <a target="_blank" href="/ClientsRoomsReservationsTable/Index?hotelId=@((Context.Items["Hotel"] as Hotel).Id)">Таблице занятости номеров</a></p>
+        <div id="sections">
+        </div>
+        <div class="form-group">
+            @{
+                if ((Context.Items["Hotel"] as Hotel).ShowPetCheckbox)
+                {
+                    <button onclick="addNewSection(true)" style="margin-top:5px" class="btn btn-light">Добавить номер</button>
+                }
+                else
+                {
+                    <button onclick="addNewSection(false)" style="margin-top:5px" class="btn btn-light">Добавить номер</button>
+                }
+            }
+
+        </div>
+        <div class="form-group">
+            <button onclick="SubmitButtonClick()" style="margin-top:10px" class="btn btn-light">Найти</button>
+        </div>
+        <div class="form-group" id="hotelId">
+            @{
+                int? id = (Context.Items["Hotel"] as Hotel)?.Id;
+            }
+            <input type="hidden" class="form-control" value="@((Context.Items["Hotel"] as Hotel)?.Id)" />
+        </div>
+
+    </div>
+    <div class="child-div hide-on-phone">
+    </div>
+</body>
+@{
+    Hotel h = Context.Items["Hotel"] as Hotel;
+    bool c = (Context.Items["Hotel"] as Hotel).ShowPetCheckbox;
+    if (c)
+    {
+        <script>
+            addNewSection(true);
+            adjustHeight();
+            adjustWidth();
+        </script>
+    }
+    else
+    {
+        <script>
+            addNewSection(false);
+            adjustHeight();
+            adjustWidth();
+        </script>
+    }
+}
+</html>
+
+
+
+
+
+
+@*@using MvcTest.Models;
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Поиск вариантов размещения</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MvcTest.styles.css" asp-append-version="true" />
+    <script src="~/js/CreateSearchQuery.js"></script>
+    <style>
+        body {
+            background-size: cover;
+            background-position: center;
+            background-image: url("168_hotelff-peterhoff-18.jpg");
+            margin: 0;
+            display: flex;
+        }
+
+        input {
+            margin-right: 5px;
+        }
+
+        .acrylic {
+            padding: 4em 6em;
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            margin: 7px;
+        }
+
+        ._shadow {
+            border-radius: 1px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .child-div {
+            flex: 1;
+        }
+
+        #section {
+            background-color: rgb(255,255,255,0.4) !important;
+            margin-bottom: 5px;
+        }
+
+        @@media (max-width: 767px) { /* Adjust the maximum width to match your desired breakpoint */
+            .hide-on-phone {
+                display: none;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="child-div acrylic _shadow" style=" margin:20px; padding:10px;border-radius:10px;">
+        <h1>Найти варианты проживания</h1>
+        <hr />
+        <p>Пожалуйста, заполните информацию о вашем плане проживания для поиска вариантов размещения</p>
+        <div id="sections">
+        </div>
+        <div class="form-group">
+            <button onclick="addNewSection()" style="margin-top:5px" class="btn btn-light">Добавить номер</button>
+        </div>
+        <div class="form-group">
+            <button onclick="SubmitButtonClick()" style="margin-top:10px" class="btn btn-light">Найти</button>
+        </div>
+        <div class="form-group" id="hotelId">
+            <input type="hidden" class="form-control" value="@((Context.Items["Hotel"] as Hotel)?.Id)" />
+        </div>
+
+    </div>
+    <div class="child-div hide-on-phone">
+    </div>
+</body>
+<script>
+    addNewSection();
+    adjustHeight();
+    adjustWidth();
+</script>
+</html>*@
+
+
+

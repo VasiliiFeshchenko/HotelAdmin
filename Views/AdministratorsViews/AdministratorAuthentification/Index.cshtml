@@ -1,0 +1,47 @@
+﻿@{
+    Layout = null;
+    Context.Items["Title"] = "Вход в систему";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <h3>Пожалуйста, введите код доступа для входа в систему</h3>
+        <form>
+            <div class="form-group">
+                <input autofocus id="input" type="text" class="form-control" placeholder="Введите код доступа" onkeydown="if (event.keyCode === 13) { event.preventDefault(); Check(); }" />
+            </div>
+            <button id="submitButton" onclick="Check()" type="button" class="btn btn-primary">Войти</button>
+        </form>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+<script>
+    function Check() {
+        var accessCode = document.getElementById('input').value;
+        // Send the AJAX request
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/AdministratorAuthentification/Index?accessCode=' + encodeURIComponent(accessCode));
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                if (!(xhr.responseText.includes("Неправльный код!"))) {
+                    window.location.replace(xhr.responseText);
+                }
+                else {
+                    alert(xhr.responseText);
+                }
+            } else {
+                console.log(xhr.statusText);
+            }
+        };
+        xhr.send();
+    }
+</script>
+</html>

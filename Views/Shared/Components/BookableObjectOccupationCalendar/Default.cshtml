@@ -1,0 +1,50 @@
+﻿@using HotelAdmin.Controllers.Components;
+@model BookableObjectOccupationCalendarModel
+<style>
+    .calendarRoot{
+        width: 350px;
+        border: solid black 1px;
+        margin:10px;
+        padding:10px;
+        border-radius:5px;
+    }
+    .btn{
+        padding:initial;
+    }
+</style>
+<div class="calendarRoot" >
+    <div class="row">
+        <div class="col-6">
+            @*<h3>@Model.Month, @Model.Year</h3>*@
+            <h3>Май, 2023</h3>
+        </div>
+        <div class="col-6">
+            <div class="row">
+                <div class="col-6">
+                    <button class="btn" style="width:100%">Назад</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn" style="width:100%">Вперед</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Пн</th>
+                    <th>Вт</th>
+                    <th>Ср</th>
+                    <th>Чт</th>
+                    <th>Пт</th>
+                    <th>Сб</th>
+                    <th>Вс</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>

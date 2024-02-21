@@ -1,0 +1,29 @@
+﻿@using MvcTest.Models;
+@using MvcTest.Models.HotelManagerModels;
+@using HotelAdmin.Data.Models.Order;
+@model MvcTest.Controllers.OrderModel
+@{
+    Context.Items["Title"] = "Создать заказ - " + (Context.Items["Hotel"] as Hotel)?.Name;
+
+}
+<style>
+    .btn {
+        margin-top: 5px;
+    }
+</style>
+<script src="/js/CreateOrEditOrder.js"></script>
+<h1>Добавить</h1>
+
+<h4>Заказ</h4>
+<hr />
+@await Component.InvokeAsync("OrderInfo")
+<hr />
+<div class="form-group">
+    <button onclick="SubmitButtonClick()" class="btn btn-primary">Добавить заказ</button>
+</div>
+<script>
+    var roomDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(Context.Items["Room"] as string))");
+    var startDecoded = decodeURIComponent("@(System.Web.HttpUtility.UrlEncode(Context.Items["StartDate"] as string))");
+    addNewSection(roomDecoded, "", startDecoded, "", "");
+</script>
+

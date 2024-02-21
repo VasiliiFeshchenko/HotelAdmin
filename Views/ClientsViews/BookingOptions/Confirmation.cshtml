@@ -1,0 +1,35 @@
+﻿@{
+    Context.Items["Title"] = "Заказ оформлен успешно!";
+}
+<style>
+    body {
+        background-size: cover;
+        background-position: center;
+        background-image: url('@Url.Content("~/"+(Context.Items["Hotel"] as Hotel).ImageUrl)');
+    }
+
+    .acrylic {
+        padding: 4em 6em;
+        position: relative;
+        background: rgba(255, 255, 255, 0.5);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        margin: 7px;
+    }
+
+    .shadow {
+        border-radius: 1px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="child-div acrylic shadow" style="background:rgba(255, 255, 255, 0.8); margin:20px; padding:10px;border-radius:10px;">
+<h1>Спасибо за Ваш заказ!</h1>
+<h4>Номера зарезервированы за Вами в ожидании оплаты задатка.</h4>
+<p>Вам на почту направлена информация с реквизитами для оплаты.</p>
+<p>Система бронирования проходит тестирование и может содержать ошибки. Приносим свои извинения, если вы столкнетесь с некоректной работой системы. Пожалуйста, если у вас есть такая возможность, проверьте свою бронь звонком (телефоны для связи ниже).</p>
+<hr />
+<p>
+    При возникновении любых вопросов, пожалуйста, свяжитесь с нами по телефонам "Отель-коттедж Ф&Ф"
+        +79217441044 или "Дом Трувеллера" +79215740184
+</p>
+</div>
